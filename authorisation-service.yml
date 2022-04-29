@@ -1,5 +1,5 @@
 server:
-    port: 9191
+    port: 9999
     servlet:
         context-path: /api
 
@@ -54,7 +54,7 @@ spring:
 
 management:
     server:
-        port: 9191
+        port: 9999
     health:
         db.enabled: true
         show-details: ALWAYS
