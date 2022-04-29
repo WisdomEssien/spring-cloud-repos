@@ -1,0 +1,194 @@
+
+server:
+  port: 9190
+  servlet:
+    context-path: /api
+
+kafka:
+  pocketmoni:
+    topic: fraud-pocketmoni
+
+  mobilegate:
+    topic: fraud-mobilegate
+
+  corporate:
+    topic: fraud-corporatepay
+
+  switchit:
+    topic: fraud-switchit
+
+security:
+  oauth2:
+    resource:
+      jwt:
+        key-value: -----BEGIN PUBLIC KEY-----MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhYcaMfySijW5QEGsJwVtiQrU2EIqcGWShtOow7WR9Y8XB+gHcvMs3/oLieyRYXaEUuwtSGSPzUG5vW5q5BVYNjnM6u+ZAhRHxTYoBiwOGXf/jOB39wraZRk4Vuz2GErHXknlLCkMMMmDDxneN5DSuPlkaHHuZIy7UYOaiAIt6fSFEvY7rcoIpL7rM9pAZjgjdfaKXKw/cNygOz91lKByJvJCHqfMhENP+03Bbib9YH0ThI7SLTU0Vc61hW+ioRulYkKQ8OyY/vB8cWlHHRL3Tb/jyhmz/J/GTUl/colEPW/erJVBIa7AqNNgWIUprAs4QQ3RBBp5pREMJPlt1cLuAwIDAQAB-----END PUBLIC KEY-----
+      id: fraud-engine
+
+  secret-key: AuthETransactNgView2021
+
+spring:
+  application:
+    name: fraud-eagle-eye-manager-service
+  security:
+      user:
+        password: password
+  ## MailProperties
+  mail:
+#    host: mail.etranzact.com
+#    port: 25
+#    username: EagleEye@etranzactng.com
+#    password: Etz@12345
+#    sender: ETZ-EAGLE-EYE-MANAGER@etranzactng.com
+    host: smtp.elasticemail.com
+    port: 2525
+    username: sirwise88@gmail.com
+    password: AFFDCAF87812A57CCC3FADB770295F6ED3C6
+    sender: EagleEye@etranzactng.com
+    protocol: smtp
+    properties:
+      mail:
+        defaultEncoding: UTF-8
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  cache:
+    type: none
+
+  redis:
+    client-type: jedis
+    host: 172.17.10.16
+    #host: 127.0.0.1
+    port: 6379
+    database: 0
+    password: visionsvisions
+
+
+  cloud:
+    consul:
+      host: http://consul.staging.etranzactng.net
+
+  sleuth:
+    enabled: true
+
+  zipkin:
+    baseUrl: http://172.17.10.83:9411
+    sender:
+      type: web
+
+  datasource:
+    username: eagleeye_user
+    password: T@w!d2021
+    url: jdbc:mysql://172.17.10.83:3306/eagle_eye?createDatabaseIfNotExist=true&useLegacyDatetimeCode=false&serverTimezone=Africa/Lagos
+#    username: wisdom
+#    password: wisdom
+#    url: jdbc:mysql://localhost:3306/eagle_eye?createDatabaseIfNotExist=true&useLegacyDatetimeCode=false&serverTimezone=Africa/Lagos
+    driverClassName: com.mysql.cj.jdbc.Driver
+    initialization-mode: never
+
+  authorisation-service:
+    userAuthoriserUrl: http://172.17.10.83:9191/api/v1/users/authoriser
+    roleAuthoriserUrl: http://172.17.10.83:9191/api/v1/roles/authoriser
+    roleIdsByPermissionNameUrl: http://172.17.10.83:9191/api/v1/roles/permissionroles
+
+  jackson:
+    default-property-inclusion: NON_NULL
+    mapper:
+      accept-case-insensitive-properties: true
+
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL55Dialect
+    show-sql: false
+
+  kafka:
+    bootstrap-servers: 10.0.0.178:9092 #localhost:9092 #10.0.0.178:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  main:
+    allow-bean-definition-overriding: true
+
+  quartz:
+    job-store-type: jdbc
+    properties:
+             org:
+               quartz:
+                  threadPool:
+                        threadCount: 5
+
+#  report-export-location: C:\Users\wisdom.essien\eclipse-workspace\etranzact\fraud-eagle-eye-manager-service\reports\
+  report-export-location: /home/wisdom.essien/eagle-eye-reports/
+
+  report-prop:
+    report1:
+      title: TransactionsToday
+      query: SELECT tran.transaction_id, prod.name, service.service_name, acct.account_no, acct.account_name, tran.amount, card.card_bin, card.cardholder_name, tran.channel, if(tran.is_fraud = 1, 'True', 'False') "is fraud", rule.id FROM eagle_eye.transaction_log tran LEFT JOIN product prod ON prod.code = tran.product_code LEFT JOIN account acct ON acct.id = tran.account_id LEFT JOIN card card ON card.id = tran.card_id LEFT JOIN product_service service ON service.service_id = tran.service_id LEFT JOIN rule rule ON rule.id = tran.flagged_rule
+    
+  report:
+    reportOne:
+      reportProp:
+        name: TransactionsToday
+        description: All transactions for today
+      query: SELECT tran.transaction_id, prod.name, service.service_name, acct.account_no, acct.account_name, tran.amount, card.card_bin, card.cardholder_name, tran.channel, if(tran.is_fraud = 1, 'True', 'False') "is fraud", rule.id FROM eagle_eye.transaction_log tran LEFT JOIN product prod ON prod.code = tran.product_code LEFT JOIN account acct ON acct.id = tran.account_id LEFT JOIN card card ON card.id = tran.card_id LEFT JOIN product_service service ON service.service_id = tran.service_id LEFT JOIN rule rule ON rule.id = tran.flagged_rule 
+      interval: 1
+      intervalType: week
+      loop: true
+      cron: "0 59 23 */7 * ?"
+      #cron: "0 */1 * * * ?"
+      enabled: true
+      exportType: EXCEL
+      createdBy: admin
+      notificationGroup: 
+        emails:
+        mailAlert: true
+        name: club1
+        phoneNo:
+        smsAlert: false
+        createdBy: admin
+
+
+management:
+  server:
+    port: 9190
+  health:
+    db.enabled: true
+    show-details: ALWAYS
+  endpoints:
+    web.exposure.include: "*"
+
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  file:
+    name: logs/application.log
+    max-history: 20
+    max-size: 20MB
+  level:
+    org.apache.http: INFO
+    org.springframework.cloud.sleuth: INFO
+    org.springframework.web: INFO
+    com.netflix.discovery.DiscoveryClient: INFO
+    org.springframework.security: INFO
+    org.hibernate: ERROR
+    com.etz.fraudengine: INFO
+    org.apache.kafka: WARN
+    org.springframework.orm.jpa: DEBUG
+    org.springframework.transaction: DEBUG
+
+hystrix:
+  command:
+    default:
+      execution.isolation.thread.timeoutInMilliseconds: 5000
+      circuitBreaker.errorThresholdPercentage: 60
+      circuitBreaker.sleepWindowInMilliseconds: 20000
+      circuitBreaker.requestVolumeThreshold: 10
